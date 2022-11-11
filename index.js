@@ -40,7 +40,12 @@ const run = async() => {
                 query = {
                     service: req.query.id
                 }
-            }
+            };
+            if(req.query.name){
+                query = {
+                    userName: req.query.name
+                }
+            };
             const cursor = reviewCollection.find(query);
             const reviews = await cursor.toArray();
             res.send(reviews);
