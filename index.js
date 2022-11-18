@@ -18,7 +18,21 @@ const run = async() => {
     try{
         const serviceCollection = client.db('assignment11').collection('services');
         const reviewCollection = client.db('assignment11').collection('reviews');
+
+        app.post('/services', async(req, res) => {
+            const service = req.body;
+            const result = await serviceCollection.insertOne(service);
+            res.send(result);
+        })
         
+        app.get('/home', async(req, res) => {
+            const query = {};
+            const cursor = serviceCollection.find(query);
+            const services = await cursor.limit(3).toArray();
+            const count = await serviceCollection.estimatedDocumentCount();
+            res.send({count, services});
+        });
+
         app.get('/services', async(req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
@@ -34,12 +48,12 @@ const run = async() => {
         });
 
         /* Review API */
-        app.get('/reviews/:id', async (req, res) => {
+        app.delete('/reviews/:id', async(req, res) => {
             const id = req.params.id;
             const query = {_id: ObjectId(id)};
-            const review = await reviewCollection.findOne(query);
+            const review = await reviewCollection.deleteOne(query);
             res.send(review);
-        });
+        })
 
         app.get('/reviews', async(req, res) => {
             let query = {};
