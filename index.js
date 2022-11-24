@@ -28,7 +28,7 @@ const run = async() => {
         app.get('/home', async(req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
-            const services = await cursor.limit(3).toArray();
+            const services = await cursor.sort({_id:-1}).limit(3).toArray();
             const count = await serviceCollection.estimatedDocumentCount();
             res.send({count, services});
         });
@@ -36,7 +36,7 @@ const run = async() => {
         app.get('/services', async(req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
-            const services = await cursor.toArray();
+            const services = await cursor.sort({_id:-1}).toArray();
             res.send(services);
         });
 
@@ -62,18 +62,19 @@ const run = async() => {
                     service: req.query.id
                 }
             };
-            if(req.query.name){
+            if(req.query.email){
                 query = {
-                    userName: req.query.name
+                    email: req.query.email
                 }
             };
-            const cursor = reviewCollection.find(query);
+            const cursor = reviewCollection.find(query).sort({_id:-1});
             const reviews = await cursor.toArray();
             res.send(reviews);
         })
 
         app.post('/reviews', async(req, res) => {
             const review = req.body;
+            
             const result = await reviewCollection.insertOne(review);
             res.send(result);
         })
@@ -85,11 +86,20 @@ const run = async() => {
             res.send(review);
         });
 
-        // app.patch('/review/:id', async(req, res)=> {
-        //     const id = req.params.id;
-        //     const query = {_id: ObjectId(id)};
+        app.put('/update', async(req, res)=> {
+            const body = req.body;
+            const options = {upsert: true};
+            const id = body.id;
+            const filter = {_id: ObjectId(id)};
+            const updateDoc ={
+                $set:{
+                    review: body.review
+                }
+            }
+            const result = await reviewCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
 
-        // })
+        })
     }
     finally{
         
